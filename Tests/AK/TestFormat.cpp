@@ -309,9 +309,13 @@ TEST_CASE(floating_point_base_change)
 {
     EXPECT_EQ(DeprecatedString::formatted("{:0.10a}", 0.999992370605468750), "0.ffff800000");
     EXPECT_EQ(DeprecatedString::formatted("{:0.10A}", 0.999996185302734375), "0.FFFFC00000");
+    EXPECT_EQ(DeprecatedString::formatted("{:0.10o}", 0.999996185302734375), "0.7777770000");
+    EXPECT_EQ(DeprecatedString::formatted("{:0.20b}", 0.999996185302734375), "0.11111111111111111100");
 
     EXPECT_EQ(DeprecatedString::formatted("{:.10a}", 0.000000953674316406250), "0.00001");
     EXPECT_EQ(DeprecatedString::formatted("{:.10a}", 0.000000476837158203125), "0.000008");
+    EXPECT_EQ(DeprecatedString::formatted("{:.10o}", 0.000000476837158203125), "0.0000001");
+    EXPECT_EQ(DeprecatedString::formatted("{:.21b}", 0.000000476837158203125), "0.000000000000000000001");
 
     EXPECT_EQ(DeprecatedString::formatted("{}", 0.12109375), "0.121093");
     EXPECT_EQ(DeprecatedString::formatted("{:a}", 0.12109375), "0.1f");
@@ -322,6 +326,13 @@ TEST_CASE(floating_point_base_change)
     // actually, 42.42 cannot be represented accurately in binary
     EXPECT_EQ(DeprecatedString::formatted("{:0.20}", 42.42), "42.42000000000000170530");
     EXPECT_EQ(DeprecatedString::formatted("{:a}", 42.42), "2a.6b851e");
+    EXPECT_EQ(DeprecatedString::formatted("{:o}", 42.42), "52.327024");
+    EXPECT_EQ(DeprecatedString::formatted("{:b}", 42.42), "101010.011010");
+
+    EXPECT_EQ(DeprecatedString::formatted("{:.20o}", 0.99951171875), "0.7776");
+    EXPECT_EQ(DeprecatedString::formatted("{:.20b}", 0.99951171875), "0.11111111111");
+    EXPECT_EQ(DeprecatedString::formatted("{:.20o}", 0.0001220703125), "0.00004");
+    EXPECT_EQ(DeprecatedString::formatted("{:.20b}", 0.0001220703125), "0.0000000000001");
 }
 
 TEST_CASE(format_nullptr)

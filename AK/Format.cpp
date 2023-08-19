@@ -843,19 +843,24 @@ ErrorOr<void> Formatter<bool>::format(FormatBuilder& builder, bool value)
 ErrorOr<void> Formatter<long double>::format(FormatBuilder& builder, long double value)
 {
     u8 base;
-    bool upper_case;
+    bool upper_case = false;
     FormatBuilder::RealNumberDisplayMode real_number_display_mode = FormatBuilder::RealNumberDisplayMode::General;
     if (m_mode == Mode::Default || m_mode == Mode::FixedPoint) {
         base = 10;
-        upper_case = false;
         if (m_mode == Mode::FixedPoint)
             real_number_display_mode = FormatBuilder::RealNumberDisplayMode::FixedPoint;
     } else if (m_mode == Mode::Hexfloat) {
         base = 16;
-        upper_case = false;
     } else if (m_mode == Mode::HexfloatUppercase) {
         base = 16;
         upper_case = true;
+    } else if (m_mode == Mode::Binary) {
+        base = 2;
+    } else if (m_mode == Mode::BinaryUppercase) {
+        base = 2;
+        upper_case = true;
+    } else if (m_mode == Mode::Octal) {
+        base = 8;
     } else {
         VERIFY_NOT_REACHED();
     }
@@ -869,19 +874,24 @@ ErrorOr<void> Formatter<long double>::format(FormatBuilder& builder, long double
 ErrorOr<void> Formatter<double>::format(FormatBuilder& builder, double value)
 {
     u8 base;
-    bool upper_case;
+    bool upper_case = false;
     FormatBuilder::RealNumberDisplayMode real_number_display_mode = FormatBuilder::RealNumberDisplayMode::General;
     if (m_mode == Mode::Default || m_mode == Mode::FixedPoint) {
         base = 10;
-        upper_case = false;
         if (m_mode == Mode::FixedPoint)
             real_number_display_mode = FormatBuilder::RealNumberDisplayMode::FixedPoint;
     } else if (m_mode == Mode::Hexfloat) {
         base = 16;
-        upper_case = false;
     } else if (m_mode == Mode::HexfloatUppercase) {
         base = 16;
         upper_case = true;
+    } else if (m_mode == Mode::Binary) {
+        base = 2;
+    } else if (m_mode == Mode::BinaryUppercase) {
+        base = 2;
+        upper_case = true;
+    } else if (m_mode == Mode::Octal) {
+        base = 8;
     } else {
         VERIFY_NOT_REACHED();
     }
