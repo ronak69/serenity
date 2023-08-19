@@ -487,21 +487,28 @@ ErrorOr<void> FormatBuilder::put_f64(
 
         double epsilon = 0.5;
         for (size_t i = 0; i < precision; ++i)
-            epsilon /= 10.0;
+            epsilon /= base;
 
         size_t visible_precision = 0;
+        StringBuilder fraction_digits;
         for (; visible_precision < precision; ++visible_precision) {
             if (value - static_cast<i64>(value) < epsilon && display_mode != RealNumberDisplayMode::FixedPoint)
                 break;
-            value *= 10.0;
-            epsilon *= 10.0;
+            // FIXME: Overflow: value may be represented exactly by f64 but value*10 may not be
+            value *= base;
+            char digit = '0' + static_cast<u8>(value);
+            if (digit > '9')
+                digit = (upper_case ? 'A' : 'a') + (digit - '9' - 1);
+            TRY(fraction_digits.try_append(digit));
+            value -= static_cast<i64>(value);
+            epsilon *= base;
         }
 
         if (zero_pad || visible_precision > 0)
             TRY(string_builder.try_append('.'));
 
         if (visible_precision > 0)
-            TRY(format_builder.put_u64(static_cast<u64>(value), base, false, upper_case, true, false, Align::Right, visible_precision));
+            TRY(string_builder.try_append(fraction_digits.string_view()));
 
         if (zero_pad && (precision - visible_precision) > 0)
             TRY(format_builder.put_u64(0, base, false, false, true, false, Align::Right, precision - visible_precision));
@@ -515,6 +522,7 @@ ErrorOr<void> FormatBuilder::put_f80(
     long double value,
     u8 base,
     bool upper_case,
+    bool zero_pad,
     bool use_separator,
     Align align,
     size_t min_width,
@@ -556,20 +564,30 @@ ErrorOr<void> FormatBuilder::put_f80(
 
         long double epsilon = 0.5l;
         for (size_t i = 0; i < precision; ++i)
-            epsilon /= 10.0l;
+            epsilon /= base;
 
         size_t visible_precision = 0;
+        StringBuilder fraction_digits;
         for (; visible_precision < precision; ++visible_precision) {
             if (value - static_cast<i64>(value) < epsilon && display_mode != RealNumberDisplayMode::FixedPoint)
                 break;
-            value *= 10.0l;
-            epsilon *= 10.0l;
+            value *= base;
+            char digit = '0' + static_cast<u8>(value);
+            if (digit > '9')
+                digit = (upper_case ? 'A' : 'a') + (digit - '9' - 1);
+            TRY(fraction_digits.try_append(digit));
+            value -= static_cast<i64>(value);
+            epsilon *= base;
         }
 
-        if (visible_precision > 0) {
-            string_builder.append('.');
-            TRY(format_builder.put_u64(static_cast<u64>(value), base, false, upper_case, true, false, Align::Right, visible_precision));
-        }
+        if (zero_pad || visible_precision > 0)
+            TRY(string_builder.try_append('.'));
+
+        if (visible_precision > 0)
+            TRY(string_builder.try_append(fraction_digits.string_view()));
+
+        if (zero_pad && (precision - visible_precision) > 0)
+            TRY(format_builder.put_u64(0, base, false, false, true, false, Align::Right, precision - visible_precision));
     }
 
     TRY(put_string(string_builder.string_view(), align, min_width, NumericLimits<size_t>::max(), fill));
@@ -845,7 +863,7 @@ ErrorOr<void> Formatter<long double>::format(FormatBuilder& builder, long double
     m_width = m_width.value_or(0);
     m_precision = m_precision.value_or(6);
 
-    return builder.put_f80(value, base, upper_case, m_use_separator, m_align, m_width.value(), m_precision.value(), m_fill, m_sign_mode, real_number_display_mode);
+    return builder.put_f80(value, base, upper_case, m_zero_pad, m_use_separator, m_align, m_width.value(), m_precision.value(), m_fill, m_sign_mode, real_number_display_mode);
 }
 
 ErrorOr<void> Formatter<double>::format(FormatBuilder& builder, double value)

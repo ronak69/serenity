@@ -291,6 +291,39 @@ TEST_CASE(magnitude_less_than_zero)
     EXPECT_EQ(DeprecatedString::formatted("{}", 0.654), "0.654");
 }
 
+TEST_CASE(floating_point_high_precisions)
+{
+    EXPECT_EQ(DeprecatedString::formatted("{:0.30}", 0.999999046325683593750000000000), "0.999999046325683593750000000000");
+    EXPECT_EQ(DeprecatedString::formatted("{:0.30}", 0.000000238418579101562500000000), "0.000000238418579101562500000000");
+    EXPECT_EQ(DeprecatedString::formatted("{:0.30}", 0.000000119209289550781250000000), "0.000000119209289550781250000000");
+    EXPECT_EQ(DeprecatedString::formatted("{:0.50}", 0.00000000000022737367544323205947875976562500000000), "0.00000000000022737367544323205947875976562500000000");
+
+    // 2^-2 + 2^-3 + 2^-4 + 2^-51
+    EXPECT_EQ(DeprecatedString::formatted("{:0.60}", 0.437500000000000444089209850062616169452667236328125000000000), "0.437500000000000444089209850062616169452667236328125000000000");
+    // 2^-2 + 2^-3 + 2^-4 + 2^-52
+    // fails because of f64 overflow somewhere in the calculations
+    // EXPECT_EQ(DeprecatedString::formatted("{:0.60}", 0.437500000000000222044604925031308084726333618164062500000000), "0.437500000000000222044604925031308084726333618164062500000000");
+}
+
+TEST_CASE(floating_point_base_change)
+{
+    EXPECT_EQ(DeprecatedString::formatted("{:0.10a}", 0.999992370605468750), "0.ffff800000");
+    EXPECT_EQ(DeprecatedString::formatted("{:0.10A}", 0.999996185302734375), "0.FFFFC00000");
+
+    EXPECT_EQ(DeprecatedString::formatted("{:.10a}", 0.000000953674316406250), "0.00001");
+    EXPECT_EQ(DeprecatedString::formatted("{:.10a}", 0.000000476837158203125), "0.000008");
+
+    EXPECT_EQ(DeprecatedString::formatted("{}", 0.12109375), "0.121093");
+    EXPECT_EQ(DeprecatedString::formatted("{:a}", 0.12109375), "0.1f");
+    EXPECT_EQ(DeprecatedString::formatted("{}", 0.94140625), "0.941406");
+    EXPECT_EQ(DeprecatedString::formatted("{:a}", 0.94140625), "0.f1");
+
+    EXPECT_EQ(DeprecatedString::formatted("{}", 42.42), "42.42");
+    // actually, 42.42 cannot be represented accurately in binary
+    EXPECT_EQ(DeprecatedString::formatted("{:0.20}", 42.42), "42.42000000000000170530");
+    EXPECT_EQ(DeprecatedString::formatted("{:a}", 42.42), "2a.6b851e");
+}
+
 TEST_CASE(format_nullptr)
 {
     EXPECT_EQ(DeprecatedString::formatted("{}", nullptr), DeprecatedString::formatted("{:p}", static_cast<FlatPtr>(0)));
