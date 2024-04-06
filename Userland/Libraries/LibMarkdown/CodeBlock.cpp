@@ -14,7 +14,7 @@
 
 namespace Markdown {
 
-ByteString CodeBlock::render_to_html(bool) const
+ByteString CodeBlock::render_to_html(RenderExtensionConfig const&, bool) const
 {
     StringBuilder builder;
 

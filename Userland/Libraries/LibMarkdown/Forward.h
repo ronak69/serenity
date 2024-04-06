@@ -10,6 +10,7 @@ namespace Markdown {
 
 class Block;
 class Document;
+class RenderExtensionConfig;
 class Text;
 
 class BlockQuote;

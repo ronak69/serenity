@@ -74,7 +74,7 @@ Vector<ByteString> Table::render_lines_for_terminal(size_t view_width) const
     return lines;
 }
 
-ByteString Table::render_to_html(bool) const
+ByteString Table::render_to_html(RenderExtensionConfig const& render_extension_config, bool) const
 {
     auto alignment_string = [](Alignment alignment) {
         switch (alignment) {
@@ -95,7 +95,7 @@ ByteString Table::render_to_html(bool) const
     builder.append("<tr>"sv);
     for (auto& column : m_columns) {
         builder.appendff("<th style='text-align: {}'>", alignment_string(column.alignment));
-        builder.append(column.header.render_to_html());
+        builder.append(column.header.render_to_html(render_extension_config));
         builder.append("</th>"sv);
     }
     builder.append("</tr>"sv);
@@ -106,7 +106,7 @@ ByteString Table::render_to_html(bool) const
         for (auto& column : m_columns) {
             VERIFY(i < column.rows.size());
             builder.appendff("<td style='text-align: {}'>", alignment_string(column.alignment));
-            builder.append(column.rows[i].render_to_html());
+            builder.append(column.rows[i].render_to_html(render_extension_config));
             builder.append("</td>"sv);
         }
         builder.append("</tr>"sv);

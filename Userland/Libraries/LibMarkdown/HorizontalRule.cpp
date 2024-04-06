@@ -12,7 +12,7 @@
 
 namespace Markdown {
 
-ByteString HorizontalRule::render_to_html(bool) const
+ByteString HorizontalRule::render_to_html(RenderExtensionConfig const&, bool) const
 {
     return "<hr />\n";
 }

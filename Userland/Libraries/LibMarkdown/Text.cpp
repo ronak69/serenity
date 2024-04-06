@@ -14,10 +14,10 @@
 
 namespace Markdown {
 
-void Text::EmphasisNode::render_to_html(StringBuilder& builder) const
+void Text::EmphasisNode::render_to_html(StringBuilder& builder, RenderExtensionConfig const& render_extension_config) const
 {
     builder.append((strong) ? "<strong>"sv : "<em>"sv);
-    child->render_to_html(builder);
+    child->render_to_html(builder, render_extension_config);
     builder.append((strong) ? "</strong>"sv : "</em>"sv);
 }
 
@@ -53,10 +53,10 @@ RecursionDecision Text::EmphasisNode::walk(Visitor& visitor) const
     return child->walk(visitor);
 }
 
-void Text::CodeNode::render_to_html(StringBuilder& builder) const
+void Text::CodeNode::render_to_html(StringBuilder& builder, RenderExtensionConfig const& render_extension_config) const
 {
     builder.append("<code>"sv);
-    code->render_to_html(builder);
+    code->render_to_html(builder, render_extension_config);
     builder.append("</code>"sv);
 }
 
@@ -86,7 +86,7 @@ RecursionDecision Text::CodeNode::walk(Visitor& visitor) const
     return code->walk(visitor);
 }
 
-void Text::BreakNode::render_to_html(StringBuilder& builder) const
+void Text::BreakNode::render_to_html(StringBuilder& builder, RenderExtensionConfig const&) const
 {
     builder.append("<br />"sv);
 }
@@ -113,7 +113,7 @@ RecursionDecision Text::BreakNode::walk(Visitor& visitor) const
     return RecursionDecision::Continue;
 }
 
-void Text::TextNode::render_to_html(StringBuilder& builder) const
+void Text::TextNode::render_to_html(StringBuilder& builder, RenderExtensionConfig const&) const
 {
     builder.append(escape_html_entities(text));
 }
@@ -153,11 +153,20 @@ RecursionDecision Text::TextNode::walk(Visitor& visitor) const
     return RecursionDecision::Continue;
 }
 
-void Text::LinkNode::render_to_html(StringBuilder& builder) const
+void Text::LinkNode::render_to_html(StringBuilder& builder, RenderExtensionConfig const& render_extension_config) const
 {
+    ByteString render_href;
+
+    // Add file:// if the link is an absolute path otherwise it will be assumed relative.
+    if (render_extension_config.is_enabled(RenderExtension::PrependFileProtocolIfAbsolutePath)
+        && AK::StringUtils::starts_with(href, "/"sv, CaseSensitivity::CaseSensitive))
+        render_href = ByteString::formatted("file://{}", href);
+    else
+        render_href = href;
+
     if (is_image) {
         builder.append("<img src=\""sv);
-        builder.append(escape_html_entities(href));
+        builder.append(escape_html_entities(render_href));
         if (has_image_dimensions()) {
             builder.append("\" style=\""sv);
             if (image_width.has_value())
@@ -166,13 +175,13 @@ void Text::LinkNode::render_to_html(StringBuilder& builder) const
                 builder.appendff("height: {}px;", *image_height);
         }
         builder.append("\" alt=\""sv);
-        text->render_to_html(builder);
+        text->render_to_html(builder, render_extension_config);
         builder.append("\" />"sv);
     } else {
         builder.append("<a href=\""sv);
-        builder.append(escape_html_entities(href));
+        builder.append(escape_html_entities(render_href));
         builder.append("\">"sv);
-        text->render_to_html(builder);
+        text->render_to_html(builder, render_extension_config);
         builder.append("</a>"sv);
     }
 }
@@ -215,10 +224,10 @@ RecursionDecision Text::LinkNode::walk(Visitor& visitor) const
     return text->walk(visitor);
 }
 
-void Text::MultiNode::render_to_html(StringBuilder& builder) const
+void Text::MultiNode::render_to_html(StringBuilder& builder, RenderExtensionConfig const& render_extension_config) const
 {
     for (auto& child : children) {
-        child->render_to_html(builder);
+        child->render_to_html(builder, render_extension_config);
     }
 }
 
@@ -260,10 +269,10 @@ RecursionDecision Text::MultiNode::walk(Visitor& visitor) const
     return RecursionDecision::Continue;
 }
 
-void Text::StrikeThroughNode::render_to_html(StringBuilder& builder) const
+void Text::StrikeThroughNode::render_to_html(StringBuilder& builder, RenderExtensionConfig const& render_extension_config) const
 {
     builder.append("<del>"sv);
-    striked_text->render_to_html(builder);
+    striked_text->render_to_html(builder, render_extension_config);
     builder.append("</del>"sv);
 }
 
@@ -298,10 +307,10 @@ size_t Text::terminal_length() const
     return m_node->terminal_length();
 }
 
-ByteString Text::render_to_html() const
+ByteString Text::render_to_html(RenderExtensionConfig const& render_extension_config) const
 {
     StringBuilder builder;
-    m_node->render_to_html(builder);
+    m_node->render_to_html(builder, render_extension_config);
     return builder.to_byte_string().trim(" \n\t"sv);
 }
 
@@ -672,10 +681,6 @@ NonnullOwnPtr<Text::Node> Text::parse_link(Vector<Token>::ConstIterator& tokens)
             tokens = iterator;
 
             ByteString href = address.to_byte_string().trim_whitespace();
-
-            // Add file:// if the link is an absolute path otherwise it will be assumed relative.
-            if (AK::StringUtils::starts_with(href, "/"sv, CaseSensitivity::CaseSensitive))
-                href = ByteString::formatted("file://{}", href);
 
             return make<LinkNode>(is_image, move(link_text), move(href), image_width, image_height);
         }

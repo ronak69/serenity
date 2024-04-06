@@ -11,7 +11,7 @@
 
 namespace Markdown {
 
-ByteString CommentBlock::render_to_html(bool) const
+ByteString CommentBlock::render_to_html(RenderExtensionConfig const&, bool) const
 {
     StringBuilder builder;
 

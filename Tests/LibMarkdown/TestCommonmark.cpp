@@ -25,6 +25,9 @@ TEST_SETUP
     MUST(file->read_until_filled(content.bytes()));
     ByteString test_data { content.bytes() };
 
+    Markdown::RenderExtensionConfig render_extension_config;
+    render_extension_config.disable_all();
+
     auto tests = JsonParser(test_data).parse().value().as_array();
     for (size_t i = 0; i < tests.size(); ++i) {
         auto testcase = tests[i].as_object();
@@ -39,9 +42,9 @@ TEST_SETUP
         ByteString html = testcase.get_byte_string("html"sv).value();
 
         Test::TestSuite::the().add_case(adopt_ref(*new Test::TestCase(
-            name, [markdown, html]() {
+            name, [markdown, html, &render_extension_config]() {
                 auto document = Markdown::Document::parse(markdown);
-                EXPECT_EQ(document->render_to_inline_html(), html);
+                EXPECT_EQ(document->render_to_inline_html(render_extension_config), html);
             },
             false)));
     }

@@ -13,6 +13,7 @@
 #include <AK/OwnPtr.h>
 #include <AK/RecursionDecision.h>
 #include <AK/Vector.h>
+#include <LibMarkdown/Document.h>
 #include <LibMarkdown/Forward.h>
 
 namespace Markdown {
@@ -21,7 +22,7 @@ class Text final {
 public:
     class Node {
     public:
-        virtual void render_to_html(StringBuilder& builder) const = 0;
+        virtual void render_to_html(StringBuilder& builder, RenderExtensionConfig const& = {}) const = 0;
         virtual void render_for_terminal(StringBuilder& builder) const = 0;
         virtual void render_for_raw_print(StringBuilder& builder) const = 0;
         virtual size_t terminal_length() const = 0;
@@ -41,7 +42,7 @@ public:
         {
         }
 
-        virtual void render_to_html(StringBuilder& builder) const override;
+        virtual void render_to_html(StringBuilder& builder, RenderExtensionConfig const& = {}) const override;
         virtual void render_for_terminal(StringBuilder& builder) const override;
         virtual void render_for_raw_print(StringBuilder& builder) const override;
         virtual size_t terminal_length() const override;
@@ -57,7 +58,7 @@ public:
         {
         }
 
-        virtual void render_to_html(StringBuilder& builder) const override;
+        virtual void render_to_html(StringBuilder& builder, RenderExtensionConfig const& = {}) const override;
         virtual void render_for_terminal(StringBuilder& builder) const override;
         virtual void render_for_raw_print(StringBuilder& builder) const override;
         virtual size_t terminal_length() const override;
@@ -66,7 +67,7 @@ public:
 
     class BreakNode : public Node {
     public:
-        virtual void render_to_html(StringBuilder& builder) const override;
+        virtual void render_to_html(StringBuilder& builder, RenderExtensionConfig const& = {}) const override;
         virtual void render_for_terminal(StringBuilder& builder) const override;
         virtual void render_for_raw_print(StringBuilder& builder) const override;
         virtual size_t terminal_length() const override;
@@ -90,7 +91,7 @@ public:
         {
         }
 
-        virtual void render_to_html(StringBuilder& builder) const override;
+        virtual void render_to_html(StringBuilder& builder, RenderExtensionConfig const& = {}) const override;
         virtual void render_for_terminal(StringBuilder& builder) const override;
         virtual void render_for_raw_print(StringBuilder& builder) const override;
         virtual size_t terminal_length() const override;
@@ -118,7 +119,7 @@ public:
         {
             return image_width.has_value() || image_height.has_value();
         }
-        virtual void render_to_html(StringBuilder& builder) const override;
+        virtual void render_to_html(StringBuilder& builder, RenderExtensionConfig const& = {}) const override;
         virtual void render_for_terminal(StringBuilder& builder) const override;
         virtual void render_for_raw_print(StringBuilder& builder) const override;
         virtual size_t terminal_length() const override;
@@ -129,7 +130,7 @@ public:
     public:
         Vector<NonnullOwnPtr<Node>> children;
 
-        virtual void render_to_html(StringBuilder& builder) const override;
+        virtual void render_to_html(StringBuilder& builder, RenderExtensionConfig const& = {}) const override;
         virtual void render_for_terminal(StringBuilder& builder) const override;
         virtual void render_for_raw_print(StringBuilder& builder) const override;
         virtual size_t terminal_length() const override;
@@ -145,7 +146,7 @@ public:
         {
         }
 
-        virtual void render_to_html(StringBuilder& builder) const override;
+        virtual void render_to_html(StringBuilder& builder, RenderExtensionConfig const& = {}) const override;
         virtual void render_for_terminal(StringBuilder& builder) const override;
         virtual void render_for_raw_print(StringBuilder& builder) const override;
         virtual size_t terminal_length() const override;
@@ -154,7 +155,7 @@ public:
 
     size_t terminal_length() const;
 
-    ByteString render_to_html() const;
+    ByteString render_to_html(RenderExtensionConfig const& = {}) const;
     ByteString render_for_terminal() const;
     ByteString render_for_raw_print() const;
     RecursionDecision walk(Visitor&) const;

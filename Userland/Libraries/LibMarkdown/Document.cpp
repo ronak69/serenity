@@ -12,7 +12,7 @@
 
 namespace Markdown {
 
-ByteString Document::render_to_html(StringView extra_head_contents) const
+ByteString Document::render_to_html(StringView extra_head_contents, RenderExtensionConfig const& render_extension_config) const
 {
     StringBuilder builder;
     builder.append(R"~~~(<!DOCTYPE html>
@@ -29,7 +29,7 @@ ByteString Document::render_to_html(StringView extra_head_contents) const
 <body>
 )~~~"sv);
 
-    builder.append(render_to_inline_html());
+    builder.append(render_to_inline_html(render_extension_config));
 
     builder.append(R"~~~(
 </body>
@@ -38,9 +38,9 @@ ByteString Document::render_to_html(StringView extra_head_contents) const
     return builder.to_byte_string();
 }
 
-ByteString Document::render_to_inline_html() const
+ByteString Document::render_to_inline_html(RenderExtensionConfig const& render_extension_config) const
 {
-    return m_container->render_to_html();
+    return m_container->render_to_html(render_extension_config);
 }
 
 ErrorOr<String> Document::render_for_terminal(size_t view_width) const

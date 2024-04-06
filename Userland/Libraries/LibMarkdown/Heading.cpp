@@ -12,11 +12,15 @@
 
 namespace Markdown {
 
-ByteString Heading::render_to_html(bool) const
+ByteString Heading::render_to_html(RenderExtensionConfig const& render_extension_config, bool) const
 {
-    auto input = Unicode::normalize(m_text.render_for_raw_print(), Unicode::NormalizationForm::NFD);
-    auto slugified = MUST(AK::slugify(input));
-    return ByteString::formatted("<h{} id='{}'><a href='#{}'>#</a> {}</h{}>\n", m_level, slugified, slugified, m_text.render_to_html(), m_level);
+    if (render_extension_config.is_enabled(RenderExtension::FragmentLinksInHeading)) {
+        auto input = Unicode::normalize(m_text.render_for_raw_print(), Unicode::NormalizationForm::NFD);
+        auto slugified = MUST(AK::slugify(input));
+        return ByteString::formatted("<h{} id='{}'><a href='#{}'>#</a> {}</h{}>\n", m_level, slugified, slugified, m_text.render_to_html(render_extension_config), m_level);
+    } else {
+        return ByteString::formatted("<h{}>{}</h{}>\n", m_level, m_text.render_to_html(render_extension_config), m_level);
+    }
 }
 
 Vector<ByteString> Heading::render_lines_for_terminal(size_t) const

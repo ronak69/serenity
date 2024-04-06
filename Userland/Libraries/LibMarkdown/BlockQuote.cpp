@@ -11,11 +11,11 @@
 
 namespace Markdown {
 
-ByteString BlockQuote::render_to_html(bool) const
+ByteString BlockQuote::render_to_html(RenderExtensionConfig const& render_extension_config, bool) const
 {
     StringBuilder builder;
     builder.append("<blockquote>\n"sv);
-    builder.append(m_contents->render_to_html());
+    builder.append(m_contents->render_to_html(render_extension_config));
     builder.append("</blockquote>\n"sv);
     return builder.to_byte_string();
 }

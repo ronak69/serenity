@@ -11,14 +11,14 @@
 
 namespace Markdown {
 
-ByteString Paragraph::render_to_html(bool tight) const
+ByteString Paragraph::render_to_html(RenderExtensionConfig const& render_extension_config, bool tight) const
 {
     StringBuilder builder;
 
     if (!tight)
         builder.append("<p>"sv);
 
-    builder.append(m_text.render_to_html());
+    builder.append(m_text.render_to_html(render_extension_config));
 
     if (!tight)
         builder.append("</p>"sv);

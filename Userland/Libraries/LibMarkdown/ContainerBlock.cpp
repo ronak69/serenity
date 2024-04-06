@@ -18,19 +18,19 @@
 
 namespace Markdown {
 
-ByteString ContainerBlock::render_to_html(bool tight) const
+ByteString ContainerBlock::render_to_html(RenderExtensionConfig const& render_extension_config, bool tight) const
 {
     StringBuilder builder;
 
     for (size_t i = 0; i + 1 < m_blocks.size(); ++i) {
-        auto s = m_blocks[i]->render_to_html(tight);
+        auto s = m_blocks[i]->render_to_html(render_extension_config, tight);
         builder.append(s);
     }
 
     // I don't like this edge case.
     if (m_blocks.size() != 0) {
         auto& block = m_blocks[m_blocks.size() - 1];
-        auto s = block->render_to_html(tight);
+        auto s = block->render_to_html(render_extension_config, tight);
         if (tight && dynamic_cast<Paragraph const*>(block.ptr())) {
             builder.append(s.substring_view(0, s.length() - 1));
         } else {

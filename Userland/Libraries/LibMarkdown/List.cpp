@@ -13,7 +13,7 @@
 
 namespace Markdown {
 
-ByteString List::render_to_html(bool) const
+ByteString List::render_to_html(RenderExtensionConfig const& render_extension_config, bool) const
 {
     StringBuilder builder;
 
@@ -29,7 +29,7 @@ ByteString List::render_to_html(bool) const
         builder.append("<li>"sv);
         if (!m_is_tight || (item->blocks().size() != 0 && !dynamic_cast<Paragraph const*>(item->blocks()[0].ptr())))
             builder.append('\n');
-        builder.append(item->render_to_html(m_is_tight));
+        builder.append(item->render_to_html(render_extension_config, m_is_tight));
         builder.append("</li>\n"sv);
     }
 
